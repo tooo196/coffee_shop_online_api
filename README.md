@@ -15,8 +15,8 @@ RESTful API для интернет-магазина кофе на Django REST F
 
 1. Клонируйте репозиторий:
 ```bash
-git clone <your-repo-url>
-cd coffee_shop
+git clone https://github.com/tooo196/coffee_shop_online_api.git
+cd coffee_shop_online
 ```
 
 2. Установите зависимости:
