@@ -30,6 +30,7 @@ INSTALLED_APPS = [
 	'rest_framework_simplejwt', # JWT аутентификация
 	'corsheaders',              # CORS headers для фронтенда
 	'drf_yasg',                 # Swagger документация
+	'django_filters',           # Фильтрация
 
 	# Локальные приложения
 	'api',

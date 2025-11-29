@@ -15,26 +15,24 @@ from .permissions import IsOwnerOrReadOnly
 class CategoryViewSet(viewsets.ModelViewSet):
 	"""
 	ViewSet для категорий товаров.
-	Доступен всем (AllowAny) для чтения, изменение только админам.
 	"""
 	queryset = Category.objects.all()
 	serializer_class = CategorySerializer
-	permission_classes = [AllowAny]  # Разрешить доступ без авторизации
+	permission_classes = [AllowAny]
 	filter_backends = [SearchFilter, OrderingFilter]
-	search_fields = ['name']  # Поля для поиска
-	ordering_fields = ['name', 'created_at']  # Поля для сортировки
+	search_fields = ['name']
+	ordering_fields = ['name', 'created_at']
 
 class ProductViewSet(viewsets.ModelViewSet):
 	"""
 	ViewSet для товаров.
-	Поддерживает фильтрацию, поиск и дополнительные actions.
 	"""
-	queryset = Product.objects.filter(is_available=True)  # Только доступные товары
+	queryset = Product.objects.filter(is_available=True)
 	serializer_class = ProductSerializer
 	permission_classes = [AllowAny]
 	filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-	filterset_fields = ['category', 'roast_level', 'is_available']  # Поля для фильтрации
-	search_fields = ['name', 'description', 'origin']  # Поля для полнотекстового поиска
+	filterset_fields = ['category', 'roast_level', 'is_available']
+	search_fields = ['name', 'description', 'origin']
 	ordering_fields = ['name', 'price', 'created_at']
 
 	@action(detail=True, methods=['get'])
@@ -42,7 +40,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 		"""Custom action: получить все отзывы для конкретного товара"""
 		product = self.get_object()
 		reviews = product.reviews.all()
-		page = self.paginate_queryset(reviews)  # Применяем пагинацию
+		page = self.paginate_queryset(reviews)
 		if page is not None:
 			serializer = ReviewSerializer(page, many=True)
 			return self.get_paginated_response(serializer.data)
@@ -53,8 +51,8 @@ class ProductViewSet(viewsets.ModelViewSet):
 	def featured(self, request):
 		"""Custom action: получить рекомендованные товары (рейтинг >= 4)"""
 		featured_products = self.get_queryset().annotate(
-			avg_rating=Avg('reviews__rating'),      # Средний рейтинг
-			review_count=Count('reviews')           # Количество отзывов
+			avg_rating=Avg('reviews__rating'),
+			review_count=Count('reviews')
 		).filter(avg_rating__gte=4.0, review_count__gte=1).order_by('-avg_rating')[:8]
 
 		serializer = self.get_serializer(featured_products, many=True)
@@ -63,7 +61,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
 	"""
 	ViewSet для заказов.
-	Пользователи видят только свои заказы (IsOwnerOrReadOnly).
+	Пользователи видят только свои заказы.
 	"""
 	serializer_class = OrderSerializer
 	permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
@@ -71,9 +69,12 @@ class OrderViewSet(viewsets.ModelViewSet):
 	filterset_fields = ['status']
 	ordering_fields = ['created_at', 'total_amount']
 
+	# ЯВНО УКАЗЫВАЕМ queryset ДЛЯ АВТОМАТИЧЕСКОГО ОПРЕДЕЛЕНИЯ BASENAME
+	queryset = Order.objects.all()
+
 	def get_queryset(self):
 		"""Возвращаем только заказы текущего пользователя"""
-		return Order.objects.filter(user=self.request.user)
+		return self.queryset.filter(user=self.request.user)
 
 	def perform_create(self, serializer):
 		"""Автоматически устанавливаем пользователя при создании заказа"""
@@ -90,9 +91,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
 	filterset_fields = ['product', 'rating']
 	ordering_fields = ['created_at', 'rating']
 
+	# ЯВНО УКАЗЫВАЕМ queryset ДЛЯ АВТОМАТИЧЕСКОГО ОПРЕДЕЛЕНИЯ BASENAME
+	queryset = Review.objects.all()
+
 	def get_queryset(self):
 		"""Возвращаем только отзывы текущего пользователя"""
-		return Review.objects.filter(user=self.request.user)
+		return self.queryset.filter(user=self.request.user)
 
 	def perform_create(self, serializer):
 		"""Автоматически устанавливаем пользователя при создании отзыва"""
@@ -104,7 +108,6 @@ from rest_framework.permissions import AllowAny
 class UserRegistrationView(APIView):
 	"""
 	API endpoint для регистрации новых пользователей.
-	Доступен без аутентификации.
 	"""
 	permission_classes = [AllowAny]
 
@@ -121,7 +124,6 @@ class UserRegistrationView(APIView):
 class UserProfileView(APIView):
 	"""
 	API endpoint для просмотра и редактирования профиля пользователя.
-	Требует аутентификации.
 	"""
 	permission_classes = [IsAuthenticated]
 
@@ -131,7 +133,7 @@ class UserProfileView(APIView):
 		return Response(serializer.data)
 
 	def put(self, request):
-		"""Обновить профиль текущего пользователя (частичное обновление)"""
+		"""Обновить профиль текущего пользователя"""
 		serializer = UserSerializer(request.user, data=request.data, partial=True)
 		if serializer.is_valid():
 			serializer.save()

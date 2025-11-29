@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponseRedirect
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -20,7 +21,14 @@ schema_view = get_schema_view(
 	permission_classes=(permissions.AllowAny,),
 )
 
+def redirect_to_swagger(request):
+	"""Перенаправление с корневого URL на Swagger документацию"""
+	return HttpResponseRedirect('/swagger/')
+
 urlpatterns = [
+	# Корневой URL - перенаправляем на Swagger
+	path('', redirect_to_swagger, name='home'),
+
 	# Админ-панель Django
 	path('admin/', admin.site.urls),
 
