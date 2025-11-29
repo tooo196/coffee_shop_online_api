@@ -38,5 +38,5 @@ python manage.py createsuperuser
 
 5. Запустите сервер:
 ```bash
-python manage.py runserver 0.0.0.0:80
+python manage.py runserver 9000
 ```
