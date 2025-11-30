@@ -144,3 +144,16 @@ pids/
 *.pid
 *.seed
 *.pid.lock
+
+# Docker
+docker-compose.override.yml
+
+# Environment variables
+.env
+.env.production
+
+# Database
+*.sqlite3
+
+# Docker volumes
+volumes/

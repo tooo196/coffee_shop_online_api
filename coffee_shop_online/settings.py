@@ -10,9 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET-KEY', default='django-insecure-ou&ce5w$r9c5fry+p*5f5h^jfsg)key^r^qfez&6%v4+*1jm@l')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0').split(',')
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+	'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -69,12 +70,26 @@ WSGI_APPLICATION = 'coffee_shop_online.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Настройки БД
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+	'default': {
+		'ENGINE': 'django.db.backends.postgresql',
+		'NAME': os.getenv('DB_NAME', 'coffee_shop_db'),
+		'USER': os.getenv('DB_USER', 'coffee_user'),
+		'PASSWORD': os.getenv('DB_PASSWORD', 'coffee_password'),
+		'HOST': os.getenv('DB_HOST', 'db'),  # 'db' для Docker
+		'PORT': os.getenv('DB_PORT', '5432'),
+	}
 }
+
+# Для разработки можно использовать SQLite
+#if config('USE_SQLITE', default=False, cast=bool):
+#	DATABASES = {
+#		'default': {
+#			'ENGINE': 'django.db.backends.sqlite3',
+#			'NAME': BASE_DIR / 'db.sqlite3',
+#		}
+#	}
 
 
 # Password validation
@@ -112,6 +127,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

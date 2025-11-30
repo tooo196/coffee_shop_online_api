@@ -1,0 +1,41 @@
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=coffee_shop_db
+      - DB_USER=coffee_user
+      - DB_PASSWORD=coffee_password
+      - DB_PORT=5432
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: coffee_shop_db
+      POSTGRES_USER: coffee_user
+      POSTGRES_PASSWORD: coffee_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+#  init-data:
+#    build: .
+#    command: >
+#      sh -c "python manage.py migrate &&
+#             python scripts/init_data.py"
+#    env_file:
+#      - .env
+#    depends_on:
+#      - db
+#    profiles: [ "init" ]
+
+volumes:
+  postgres_data:
